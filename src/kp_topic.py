@@ -1,5 +1,6 @@
 import datetime
 import dataclasses
+import uuid
 
 
 @dataclasses.dataclass
@@ -9,9 +10,9 @@ class KpTopic:
     q: str = ''
     a: str = ''
     is_public: str = ''
-    tags: list[str] = dataclasses.field(default_factory=list)
-    created_at: datetime.datetime = None
-    updated_at: datetime.datetime = None
+    tags: str = ''
+    created_at: str = ''
+    updated_at: str = ''
     created_by: str = ''
     updated_by: str = ''
 
@@ -20,9 +21,14 @@ class KpTopic:
     def prefix(cls) -> str:
         return 'topic@'
 
-    def __post_init__(self):
-        pass
-        # self.id = 'item-' + uuid.uuid4().hex
+    @classmethod
+    def create_new_id(cls) -> str:
+        return cls.prefix + uuid.uuid4().hex
+
+    @classmethod
+    def create_by_items(cls, items: list[dict]):
+        d = {x['attr'].removeprefix(cls.prefix): x['data'] for x in items}
+        return cls(**d)
 
     def to_items(self):
         return [
@@ -36,7 +42,5 @@ class KpTopic:
             {'id': self.id, 'attr': KpTopic.prefix + 'updated_by', 'data': self.updated_by}
         ]
 
-    @classmethod
-    def create_by_items(cls, items: list[dict]):
-        d = {x['attr'].removeprefix(cls.prefix): x['data'] for x in items}
-        return cls(**d)
+    def to_dict(self):
+        return dataclasses.asdict(self)

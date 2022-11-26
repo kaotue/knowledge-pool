@@ -1,27 +1,24 @@
 import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from aws_lambda_powertools.event_handler import APIGatewayRestResolver
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from usecases import get_topic
-from usecases import post_topic
+import logic_post_topic
+import logic_get_topic
 
 ROOT_PATH = f"/{os.environ.get('API_VERSION', 'v1')}/api"
 app = APIGatewayRestResolver()
 
 
-@app.get(f'{ROOT_PATH}/topics/new')
+@app.post(f'{ROOT_PATH}/topics')
 def post_topic():
-    return post_topic.run(
+    return logic_post_topic.run(
         body=app.current_event.json_body,
-        user_id=''
+        user_id='kaotue'
     )
 
 
 @app.get(f'{ROOT_PATH}/topics/<id>')
 def get_topic(id: str):
-    return get_topic.run(id)
+    return logic_get_topic.run(id)
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:

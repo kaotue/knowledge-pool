@@ -1,21 +1,26 @@
-import datetime
+import uuid
 import dataclasses
 
 
 @dataclasses.dataclass
 class KpUser:
     id: str = ''
-    created_at: datetime.datetime = None
-    updated_at: datetime.datetime = None
+    created_at: str = ''
+    updated_at: str = ''
 
     @classmethod
     @property
     def prefix(cls) -> str:
         return 'user@'
 
-    def __post_init__(self):
-        pass
-        # self.id = 'user-' + uuid.uuid4().hex
+    @classmethod
+    def create_new_id(cls) -> str:
+        return cls.prefix + uuid.uuid4().hex
+
+    @classmethod
+    def create_by_items(cls, items: list[dict]):
+        d = {x['attr'].removeprefix(cls.prefix): x['data'] for x in items}
+        return cls(**d)
 
     def to_table_items(self):
         return [
