@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Globals:
+  Function:
+    Timeout: 3
+Parameters:
+  Stage:
+    Type: String
+  DomainName:
+    Type: String
+  AwsLambdaPowertoolsLayerArn:
+    Type: String
+    Default: 'arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPython:36'
+Resources:
+  KpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub kp-${Stage}-function
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - arm64
+      Timeout: 10
+      MemorySize: 256
+      Environment:
+        Variables:
+          API_VERSION: !Ref Stage
+          TABLE_NAME: !Ref KpTable
+      Layers:
+        - !Ref AwsLambdaPowertoolsLayerArn
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: '/'
+            Method: ANY
+            RestApiId: !Ref KpApi
+        ApiProxy:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: ANY
+            RestApiId: !Ref KpApi
+  KpApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      OpenApiVersion: 3.0.2
+      Name: !Sub kp-${Stage}-api
+      BinaryMediaTypes:
+      - "*~1*"
+      - image~1png
+      - image~1svg+xml
+      MethodSettings:
+      - HttpMethod: '*'
+        ResourcePath: '/*'
+        ThrottlingBurstLimit: 3
+        ThrottlingRateLimit: 3
+  KpApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiMappingKey: !Sub ${Stage}/api
+      DomainName: !Ref DomainName
+      ApiId: !Ref KpApi
+      Stage: !Ref KpApi.Stage
+  KpTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: "id"
+        AttributeType: "S"
+      - AttributeName: "attr"
+        AttributeType: "S"
+      - AttributeName: "data"
+        AttributeType: "S"
+      TableName: !Sub kp-${Stage}-table
+      KeySchema: 
+      - AttributeName: "id"
+        KeyType: "HASH"
+      - AttributeName: "attr"
+        KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      GlobalSecondaryIndexes: 
+      - IndexName: "attr-data-index"
+        KeySchema: 
+        - AttributeName: "attr"
+          KeyType: "HASH"
+        - AttributeName: "data"
+          KeyType: "RANGE"
+        Projection: 
+          ProjectionType: "ALL"
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      TimeToLiveSpecification: 
+        AttributeName: "TTL"
+        Enabled: true
+  ConnectorFunctionToTable:
+      Type: AWS::Serverless::Connector
+      Properties:
+        Source:
+          Id: KpFunction
+        Destination:
+          Id: KpTable
+        Permissions:
+          - Read
+          - Write
+Outputs:
+  KpApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${DomainName}/"
+  KpFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt KpFunction.Arn
+  KpFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt KpFunctionRole.Arn
+    
