@@ -1,4 +1,3 @@
-import datetime
 import dataclasses
 import uuid
 
@@ -23,7 +22,7 @@ class KpTopic:
 
     @classmethod
     def create_new_id(cls) -> str:
-        return cls.prefix + uuid.uuid4().hex
+        return uuid.uuid4().hex
 
     @classmethod
     def create_by_items(cls, items: list[dict]):
@@ -32,14 +31,15 @@ class KpTopic:
 
     def to_items(self):
         return [
-            {'id': self.id, 'attr': KpTopic.prefix + 'type', 'data': self.type},
-            {'id': self.id, 'attr': KpTopic.prefix + 'q', 'data': self.q},
-            {'id': self.id, 'attr': KpTopic.prefix + 'a', 'data': self.a},
-            {'id': self.id, 'attr': KpTopic.prefix + 'tags', 'data': self.tags},
-            {'id': self.id, 'attr': KpTopic.prefix + 'created_at', 'data': self.created_at},
-            {'id': self.id, 'attr': KpTopic.prefix + 'updated_at', 'data': self.updated_at},
-            {'id': self.id, 'attr': KpTopic.prefix + 'created_by', 'data': self.created_by},
-            {'id': self.id, 'attr': KpTopic.prefix + 'updated_by', 'data': self.updated_by}
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'id', 'data': self.id},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'type', 'data': self.type},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'q', 'data': self.q},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'a', 'data': self.a},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'tags', 'data': self.tags},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'created_at', 'data': self.created_at},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'updated_at', 'data': self.updated_at},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'created_by', 'data': self.created_by},
+            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'updated_by', 'data': self.updated_by}
         ]
 
     def to_dict(self):

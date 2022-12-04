@@ -6,7 +6,7 @@ import json
 import pprint
 
 sys.path.append('../src')
-from src import app, kp_topic
+from src import app, kp_user
 
 
 def get_base_request():
@@ -20,37 +20,33 @@ def get_base_request():
         },
         "pathParameters": {"proxy": "accounts/self"},
         "httpMethod": "GET",
-        "path": "/v1/api/topics",
+        "path": "/v1/api/users",
     }
 
 
 class MyTestCase(unittest.TestCase):
     now: datetime.datetime = datetime.datetime.now()
 
-    def test_post_and_get_topic(self):
+    def test_post_and_get_user(self):
         # POST
         request = get_base_request()
         request['httpMethod'] = 'POST'
-        request['path'] = '/v1/api/topics'
+        request['path'] = '/v1/api/users'
 
-        topic = kp_topic.KpTopic()
-        topic.type = '1'
-        topic.q = 'value_q'
-        topic.a = 'value_a'
-        topic.is_public = '1'
-        topic.tags = 'tags'
+        user = kp_user.KpUser()
+        user.name = 'test_user'
 
-        request['body'] = json.dumps(dataclasses.asdict(topic))
+        request['body'] = json.dumps(dataclasses.asdict(user))
         response = app.lambda_handler(request, None)
 
         self.assertEqual(response['statusCode'], 200)
-        new_topic_id = json.loads(response['body']).get('result')
-        self.assertIsNotNone(new_topic_id)
+        new_user_id = json.loads(response['body']).get('result')
+        self.assertIsNotNone(new_user_id)
 
         # GET
         request = get_base_request()
         request['httpMethod'] = 'GET'
-        request['path'] = f'/v1/api/topics/{new_topic_id}'
+        request['path'] = f'/v1/api/users/{new_user_id}'
 
         response = app.lambda_handler(request, None)
 
