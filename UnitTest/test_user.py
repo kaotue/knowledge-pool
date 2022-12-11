@@ -36,7 +36,7 @@ class MyTestCase(unittest.TestCase):
         user = kp_user.KpUser()
         user.name = 'test_user'
 
-        request['body'] = json.dumps(dataclasses.asdict(user))
+        request['body'] = json.dumps(user.to_dict())
         response = app.lambda_handler(request, None)
 
         self.assertEqual(response['statusCode'], 200)

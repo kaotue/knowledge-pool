@@ -40,7 +40,8 @@ class MyTestCase(unittest.TestCase):
         topic.is_public = '1'
         topic.tags = 'tags'
 
-        request['body'] = json.dumps(dataclasses.asdict(topic))
+        request['body'] = json.dumps(topic.to_dict())
+        a = vars(topic)
         response = app.lambda_handler(request, None)
 
         self.assertEqual(response['statusCode'], 200)

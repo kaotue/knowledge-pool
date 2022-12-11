@@ -1,9 +1,7 @@
-import dataclasses
-import uuid
+from nosqlclass import NosqlClass
 
 
-@dataclasses.dataclass
-class KpUserTopic:
+class KpUserTopic(NosqlClass):
     id: str = ''
     status: str = ''
     notice_at: str = ''
@@ -16,26 +14,3 @@ class KpUserTopic:
     @property
     def prefix(cls) -> str:
         return 'usertopic@'
-
-    @classmethod
-    def create_new_id(cls) -> str:
-        return uuid.uuid4().hex
-
-    @classmethod
-    def create_by_items(cls, items: list[dict]):
-        d = {x['attr'].removeprefix(cls.prefix): x['data'] for x in items}
-        return cls(**d)
-
-    def to_items(self) -> list[dict]:
-        ary = []
-        for k, v in self.__dict__.items():
-            ary.append({
-                'id': KpUserTopic.prefix + self.id,
-                'attr': KpUserTopic.prefix + k,
-                'data': v
-            })
-        return ary
-
-    def to_dict(self):
-        return dataclasses.asdict(self)
-
