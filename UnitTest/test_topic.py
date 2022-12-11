@@ -41,7 +41,6 @@ class MyTestCase(unittest.TestCase):
         topic.tags = 'tags'
 
         request['body'] = json.dumps(topic.to_dict())
-        a = vars(topic)
         response = app.lambda_handler(request, None)
 
         self.assertEqual(response['statusCode'], 200)
@@ -57,7 +56,18 @@ class MyTestCase(unittest.TestCase):
 
         pprint.pprint(response)
         pprint.pprint(json.loads(response['body']))
+        self.assertEqual(response['statusCode'], 200)
 
+    def test_query(self):
+        # GET
+        request = get_base_request()
+        request['httpMethod'] = 'GET'
+        request['path'] = '/v1/api/topics'
+        request['queryStringParameters'] = {'type': 1}
+        response = app.lambda_handler(request, None)
+
+        pprint.pprint(response)
+        pprint.pprint(json.loads(response['body']))
         self.assertEqual(response['statusCode'], 200)
 
 

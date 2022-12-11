@@ -1,5 +1,4 @@
 import datetime
-import kp_table
 from kp_topic import KpTopic
 
 
@@ -13,7 +12,7 @@ def run(body: dict, login_user_id: str):
     topic.created_by = login_user_id
     topic.updated_by = login_user_id
 
-    kp_table.post_topic(topic)
+    KpTopic.db_post(topic)
 
     result = {
         'status': 'success',

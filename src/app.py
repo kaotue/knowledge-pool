@@ -4,6 +4,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 import logic_get_topic
 import logic_post_topic
 import logic_put_topic
+import logic_query_topic
 import logic_get_user
 import logic_post_user
 import logic_put_user
@@ -15,6 +16,11 @@ app = APIGatewayRestResolver()
 @app.get(f'{ROOT_PATH}/topics/<id>')
 def get_topic(id: str):
     return logic_get_topic.run(id)
+
+
+@app.get(f'{ROOT_PATH}/topics')
+def get_topic():
+    return logic_query_topic.run(app.current_event.query_string_parameters)
 
 
 @app.post(f'{ROOT_PATH}/topics')

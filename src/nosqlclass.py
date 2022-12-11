@@ -1,5 +1,12 @@
+import os
 import uuid
 import dataclasses
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+from itertools import groupby
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ.get('TABLE_NAME', 'kp-table'))
 
 
 @dataclasses.dataclass
@@ -30,3 +37,45 @@ class NosqlClass:
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
+
+    @classmethod
+    def db_post(cls, data) -> None:
+        with table.batch_writer() as batch:
+            for item in data.to_items():
+                batch.put_item(Item=item)
+
+    @classmethod
+    def db_get_item(cls, id: str):
+        response = table.query(
+            KeyConditionExpression=Key('id').eq(cls.prefix + id)
+        )
+        if 'Items' not in response.keys():
+            return None
+        return cls.create_by_items(response['Items'])
+
+    @classmethod
+    def db_get_items(cls, ids: list[str]) -> list:
+        batch_keys = {
+            table.name: {
+                'Keys': [{'id': cls.prefix + x} for x in ids]
+            }
+        }
+        response = dynamodb.batch_get_item(RequestItems=batch_keys)
+        if not (items := response['Responses'][table.name]):
+            return None
+        items.sort(key=lambda x: x['id'])
+        results = []
+        for key, datas in groupby(items, key=lambda x: x['id']):
+            results.append(cls.create_by_items(datas))
+        return results
+
+    @classmethod
+    def db_query(cls, attr: str, data: str) -> list:
+        response = table.query(
+            IndexName='attr-data-index',
+            KeyConditionExpression=Key('attr').eq(cls.prefix + attr) & Key('data').eq(str(data))
+        )
+        if 'Items' not in response.keys():
+            return []
+        ids = [x['id'].removeprefix(cls.prefix) for x in response['Items']]
+        return cls.db_get_items(ids)

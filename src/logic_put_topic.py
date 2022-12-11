@@ -1,12 +1,11 @@
 import datetime
-import kp_table
 from kp_topic import KpTopic
 
 
 def run(body: dict, topic_id: str, login_user_id: str):
     now = datetime.datetime.now()
 
-    old_topic = kp_table.get_topic(topic_id)
+    old_topic = KpTopic.db_get_item(topic_id)
     if not old_topic:
         return {
             'status': 'error',
@@ -20,7 +19,7 @@ def run(body: dict, topic_id: str, login_user_id: str):
     new_topic.updated_at = str(now)
     new_topic.updated_by = login_user_id
 
-    kp_table.post_topic(new_topic)
+    KpTopic.db_post(new_topic)
 
     result = {
         'status': 'success',
