@@ -3,9 +3,10 @@ import uuid
 
 
 @dataclasses.dataclass
-class KpUser:
+class KpUserTopic:
     id: str = ''
-    name: str = ''
+    status: str = ''
+    notice_at: str = ''
     created_at: str = ''
     updated_at: str = ''
     created_by: str = ''
@@ -14,7 +15,7 @@ class KpUser:
     @classmethod
     @property
     def prefix(cls) -> str:
-        return 'user@'
+        return 'usertopic@'
 
     @classmethod
     def create_new_id(cls) -> str:
@@ -29,8 +30,8 @@ class KpUser:
         ary = []
         for k, v in self.__dict__.items():
             ary.append({
-                'id': KpUser.prefix + self.id,
-                'attr': KpUser.prefix + k,
+                'id': KpUserTopic.prefix + self.id,
+                'attr': KpUserTopic.prefix + k,
                 'data': v
             })
         return ary

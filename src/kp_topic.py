@@ -29,18 +29,15 @@ class KpTopic:
         d = {x['attr'].removeprefix(cls.prefix): x['data'] for x in items}
         return cls(**d)
 
-    def to_items(self):
-        return [
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'id', 'data': self.id},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'type', 'data': self.type},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'q', 'data': self.q},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'a', 'data': self.a},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'tags', 'data': self.tags},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'created_at', 'data': self.created_at},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'updated_at', 'data': self.updated_at},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'created_by', 'data': self.created_by},
-            {'id': KpTopic.prefix + self.id, 'attr': KpTopic.prefix + 'updated_by', 'data': self.updated_by}
-        ]
+    def to_items(self) -> list[dict]:
+        ary = []
+        for k, v in self.__dict__.items():
+            ary.append({
+                'id': KpTopic.prefix + self.id,
+                'attr': KpTopic.prefix + k,
+                'data': v
+            })
+        return ary
 
     def to_dict(self):
         return dataclasses.asdict(self)
