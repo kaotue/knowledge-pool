@@ -3,7 +3,6 @@ import uuid
 import dataclasses
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-from itertools import groupby
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ.get('TABLE_NAME', 'kp-table'))
@@ -55,19 +54,11 @@ class NosqlClass:
 
     @classmethod
     def db_get_items(cls, ids: list[str]) -> list:
-        batch_keys = {
-            table.name: {
-                'Keys': [{'id': cls.prefix + x} for x in ids]
-            }
-        }
-        response = dynamodb.batch_get_item(RequestItems=batch_keys)
-        if not (items := response['Responses'][table.name]):
-            return None
-        items.sort(key=lambda x: x['id'])
-        results = []
-        for key, datas in groupby(items, key=lambda x: x['id']):
-            results.append(cls.create_by_items(datas))
-        return results
+        responses = []
+        for id in ids:
+            if response := cls.db_get_item(id):
+                responses.append(response)
+        return responses
 
     @classmethod
     def db_query(cls, attr: str, data: str) -> list:
