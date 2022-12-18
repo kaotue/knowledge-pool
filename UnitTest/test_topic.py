@@ -38,7 +38,6 @@ class MyTestCase(unittest.TestCase):
         topic.q = 'value_q'
         topic.a = 'value_a'
         topic.is_public = '1'
-        topic.tags = 'tags'
 
         request['body'] = json.dumps(topic.to_dict())
         response = app.lambda_handler(request, None)

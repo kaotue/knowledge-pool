@@ -41,7 +41,15 @@ class NosqlClass:
     def db_post(cls, data) -> None:
         with table.batch_writer() as batch:
             for item in data.to_items():
-                batch.put_item(Item=item)
+                if item['data']:
+                    batch.put_item(Item=item)
+                else:
+                    batch.delete_item(
+                        Key={
+                            'id': item['id'],
+                            'attr': item['attr']
+                        }
+                    )
 
     @classmethod
     def db_get_item(cls, id: str):
@@ -69,4 +77,18 @@ class NosqlClass:
         if 'Items' not in response.keys():
             return []
         ids = [x['id'].removeprefix(cls.prefix) for x in response['Items']]
+        return cls.db_get_items(ids)
+
+    @classmethod
+    def db_query_by_keys(cls, keys) -> list:
+        ids = set()
+        for key in keys:
+            response = table.query(
+                IndexName='attr-data-index',
+                KeyConditionExpression=key
+            )
+            if 'Items' in response.keys():
+                ids = ids.union({x['id'].removeprefix(cls.prefix) for x in response['Items']})
+        if not ids:
+            return None
         return cls.db_get_items(ids)
